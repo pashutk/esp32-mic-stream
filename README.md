@@ -49,4 +49,5 @@ Or: VLC > File > Open Network > `http://<IP>/stream.wav`
 
 - 16kHz sample rate
 - 16-bit mono PCM
+- Band-pass filter (80Hz – 3kHz) to reduce rumble and high-frequency noise
 - ~1-2s latency (can be reduced with VLC's `--network-caching` option)

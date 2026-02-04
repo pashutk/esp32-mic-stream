@@ -14,6 +14,48 @@ static const gpio_num_t MIC_DATA_PIN = GPIO_NUM_34; // PDM data
 static const int SAMPLE_RATE_HZ = 16000;
 static const int READ_SAMPLES = 320; // 20 ms at 16 kHz
 
+// Audio processing config
+static const float HIGHPASS_CUTOFF_HZ = 80.0f;   // Remove low-frequency rumble
+static const float LOWPASS_CUTOFF_HZ = 3000.0f;  // Remove high-frequency whine
+
+// Filter state (single-pole IIR for HP, two-pole for LP)
+static float hp_prev_in = 0.0f;
+static float hp_prev_out = 0.0f;
+static float hp_alpha = 0.0f;
+static float lp_prev_out1 = 0.0f;
+static float lp_prev_out2 = 0.0f;
+static float lp_alpha = 0.0f;
+
+void initAudioProcessing() {
+  float dt = 1.0f / SAMPLE_RATE_HZ;
+
+  // High-pass: alpha = RC / (RC + dt)
+  float hp_rc = 1.0f / (2.0f * PI * HIGHPASS_CUTOFF_HZ);
+  hp_alpha = hp_rc / (hp_rc + dt);
+
+  // Low-pass: alpha = dt / (RC + dt)
+  float lp_rc = 1.0f / (2.0f * PI * LOWPASS_CUTOFF_HZ);
+  lp_alpha = dt / (lp_rc + dt);
+}
+
+// Apply band-pass filter (high-pass + two-stage low-pass for steeper rolloff)
+void processAudio(int16_t* samples, int count) {
+  for (int i = 0; i < count; i++) {
+    float in = (float)samples[i];
+
+    // High-pass
+    float hp_out = hp_alpha * (hp_prev_out + in - hp_prev_in);
+    hp_prev_in = in;
+    hp_prev_out = hp_out;
+
+    // Low-pass (two cascaded stages for -12dB/octave rolloff)
+    lp_prev_out1 += lp_alpha * (hp_out - lp_prev_out1);
+    lp_prev_out2 += lp_alpha * (lp_prev_out1 - lp_prev_out2);
+
+    samples[i] = (int16_t)constrain((int)lp_prev_out2, -32768, 32767);
+  }
+}
+
 static bool setupMic() {
   i2s_config_t i2s_config = {};
   i2s_config.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_PDM);
@@ -104,6 +146,7 @@ void handleStream() {
   while (client.connected()) {
     if (i2s_read(I2S_NUM_0, samples, sizeof(samples), &bytes_read, portMAX_DELAY) == ESP_OK) {
       if (bytes_read > 0) {
+        processAudio(samples, bytes_read / sizeof(int16_t));
         client.write((uint8_t*)samples, bytes_read);
       }
     }
@@ -142,6 +185,9 @@ void setup() {
     }
   }
   Serial.println("i2s init ok");
+
+  initAudioProcessing();
+  Serial.println("audio processing ready");
 }
 
 void loop() {
