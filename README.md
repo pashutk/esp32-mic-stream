@@ -1,8 +1,8 @@
 # ESP32 Mic Streamer
 
-Stream live audio from M5Stack Atom Echo to VLC over WiFi.
+ESP32 WiFi microphone streaming over HTTP. Works with M5Stack Atom Echo. Streams 16-bit PCM audio as WAV.
 
-Simple DIY baby monitor — place the device in a room and listen from anywhere on your local network. No apps, no cloud, just VLC.
+Use as baby monitor, room monitor, or remote mic. No apps, no cloud — just open the stream URL in any audio player (VLC, ffplay, browser, etc.).
 
 Built with Claude Code.
 
@@ -38,12 +38,17 @@ Built with Claude Code.
 
 ## Usage
 
-Open the stream in VLC:
-```bash
-open -a VLC http://<IP>/stream.wav
-```
+Open `http://<IP>/stream.wav` in any audio player:
 
-Or: VLC > File > Open Network > `http://<IP>/stream.wav`
+```bash
+# VLC
+open -a VLC http://<IP>/stream.wav
+
+# ffplay
+ffplay http://<IP>/stream.wav
+
+# or just open the URL in a browser
+```
 
 ## Specs
 
