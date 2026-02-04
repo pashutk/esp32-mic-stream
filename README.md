@@ -8,7 +8,10 @@ Use as baby monitor, room monitor, or remote mic. No apps, no cloud — just ope
 
 ```mermaid
 flowchart LR
-    A[Atom Echo] -->|WiFi| B[Router] -->|HTTP| C[VLC / Browser]
+    subgraph Device
+        M[🎤 Mic] --> E[ESP32]
+    end
+    E -->|WiFi<br/>/stream.wav| P[🔊 Any Player]
 ```
 
 Built with Claude Code.
