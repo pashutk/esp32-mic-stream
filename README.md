@@ -1,6 +1,6 @@
 # ESP32 Mic Streamer
 
-<img src="docs/atom-echo.jpg" width="200" align="right" alt="M5Stack Atom Echo">
+![M5Stack Atom Echo](docs/banner.jpg)
 
 ESP32 WiFi microphone streaming over HTTP. Works with M5Stack Atom Echo. Streams 16-bit PCM audio as WAV.
 
