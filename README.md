@@ -2,6 +2,10 @@
 
 Stream live audio from M5Stack Atom Echo to VLC over WiFi.
 
+Simple DIY baby monitor — place the device in a room and listen from anywhere on your local network. No apps, no cloud, just VLC.
+
+Built with Claude Code.
+
 ## Hardware
 
 - M5Stack Atom Echo (ESP32-PICO-D4 with PDM mic)
