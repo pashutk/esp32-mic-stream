@@ -1,8 +1,11 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
+#include <ESPmDNS.h>
 #include "driver/i2s.h"
 #include "credentials.h"  // defines WIFI_SSID and WIFI_PASS
+
+static const char* MDNS_HOSTNAME = "esp32-mic";
 
 WebServer server(80);
 
@@ -171,6 +174,14 @@ void setup() {
   Serial.println(" connected!");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+
+  // Setup mDNS
+  if (MDNS.begin(MDNS_HOSTNAME)) {
+    MDNS.addService("http", "tcp", 80);
+    Serial.printf("mDNS started: http://%s.local/stream.wav\n", MDNS_HOSTNAME);
+  } else {
+    Serial.println("mDNS failed to start");
+  }
 
   // Setup HTTP server
   server.on("/", handleHello);

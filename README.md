@@ -8,7 +8,7 @@ Use as baby monitor, room monitor, or remote mic. No apps, no cloud — just ope
 
 ```mermaid
 flowchart LR
-    A[📍 Atom Echo<br/>in any room] -- http://IP/stream.wav --> B[🎧 Listen from<br/>anywhere on network]
+    A[📍 Atom Echo<br/>in any room] -- http://esp32-mic.local/stream.wav --> B[🎧 Listen from<br/>anywhere on network]
 ```
 
 Built with Claude Code.
@@ -38,24 +38,26 @@ Built with Claude Code.
    pio run -t upload
    ```
 
-4. Get the IP address from serial monitor:
+4. (Optional) Check serial monitor to verify it's working:
    ```bash
    pio device monitor
    ```
 
 ## Usage
 
-Open `http://<IP>/stream.wav` in any audio player:
+Open `http://esp32-mic.local/stream.wav` in any audio player:
 
 ```bash
 # VLC
-open -a VLC http://<IP>/stream.wav
+open -a VLC http://esp32-mic.local/stream.wav
 
 # ffplay
-ffplay http://<IP>/stream.wav
+ffplay http://esp32-mic.local/stream.wav
 
 # or just open the URL in a browser
 ```
+
+The device advertises itself via mDNS, so no need to find the IP address. If `.local` doesn't work on your network, check the serial monitor for the IP.
 
 ## Specs
 
