@@ -4,11 +4,11 @@
 
 ESP32 WiFi microphone streaming over HTTP. Works with M5Stack Atom Echo. Streams 16-bit PCM audio as WAV.
 
-Use as baby monitor, room monitor, or remote mic. No apps, no cloud — just open the stream URL in any audio player (VLC, ffplay, browser, etc.).
+Use as baby monitor, room monitor, or remote mic. No apps, no cloud — open the stream URL in any audio player (VLC, ffplay, browser, etc.).
 
 ```mermaid
 flowchart LR
-    A[📍 Atom Echo<br/>in any room] -- http://esp32-mic.local/stream.wav --> B[🎧 Listen from<br/>anywhere on network]
+    A[Atom Echo] -- http://esp32-mic.local/stream.wav --> B[VLC / Browser / ffplay]
 ```
 
 Built with Claude Code.
