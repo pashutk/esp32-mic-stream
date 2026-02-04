@@ -1,0 +1,4 @@
+.pio
+.venv
+src/credentials.h
+.DS_Store
