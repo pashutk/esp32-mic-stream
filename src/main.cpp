@@ -226,4 +226,19 @@ void setup() {
 
 void loop() {
   server.handleClient();
+
+  // Reconnect WiFi if disconnected
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi disconnected, reconnecting...");
+    setLED(0, 0, 50);  // Blue: reconnecting
+    WiFi.reconnect();
+    unsigned long start = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - start < 10000) {
+      delay(500);
+    }
+    if (WiFi.status() == WL_CONNECTED) {
+      Serial.println("WiFi reconnected");
+      setLED(0, 50, 0);  // Green: connected
+    }
+  }
 }
