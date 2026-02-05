@@ -59,9 +59,19 @@ ffplay http://esp32-mic.local/stream.wav
 
 The device advertises itself via mDNS, so no need to find the IP address. If `.local` doesn't work on your network, check the serial monitor for the IP.
 
+## LED Status
+
+| Color | Meaning |
+|-------|---------|
+| Blue (blinking) | Connecting to WiFi |
+| Green | Connected, idle |
+| Cyan | Streaming audio |
+| Red | Error (mic init failed) |
+
 ## Specs
 
 - 16kHz sample rate
 - 16-bit mono PCM
 - Band-pass filter (80Hz – 3kHz) to reduce rumble and high-frequency noise
 - ~1-2s latency (can be reduced with VLC's `--network-caching` option)
+- Auto-reconnects if WiFi drops
