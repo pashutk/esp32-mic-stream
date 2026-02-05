@@ -17,7 +17,13 @@ Built with Claude Code.
 
 - M5Stack Atom Echo (ESP32-PICO-D4 with PDM mic)
 
-## Setup
+## Quick Install (Web)
+
+Flash directly from your browser (Chrome/Edge):
+
+**[Install ESP32-Mic](https://pashutk.github.io/esp32-mic-stream/)**
+
+## Setup (Manual)
 
 1. Install PlatformIO:
    ```bash
