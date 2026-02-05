@@ -4,7 +4,11 @@
 #include <ESPmDNS.h>
 #include <FastLED.h>
 #include "driver/i2s.h"
-#include "credentials.h"  // defines WIFI_SSID and WIFI_PASS
+#if __has_include("credentials.h")
+#include "credentials.h"
+#else
+#error "Missing credentials.h - copy src/credentials.h.example to src/credentials.h and fill in your WiFi credentials"
+#endif
 
 static const char* MDNS_HOSTNAME = "esp32-mic";
 
