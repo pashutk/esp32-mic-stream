@@ -35,7 +35,7 @@ Built with Claude Code.
 3. Connect to WiFi:
    - The device creates a WiFi network called "ESP32-Mic-Setup"
    - Connect to it with your phone or computer
-   - A captive portal opens automatically (or go to 192.168.4.1)
+   - A captive portal opens automatically
    - Select your WiFi network and enter the password
    - The device saves credentials and connects automatically
 
