@@ -26,17 +26,18 @@ Built with Claude Code.
    pip install platformio
    ```
 
-2. Copy and fill in your WiFi credentials:
-   ```bash
-   cp src/credentials.h.example src/credentials.h
-   # edit src/credentials.h with your SSID and password
-   ```
-
-3. Build and flash:
+2. Build and flash:
    ```bash
    source .venv/bin/activate
    pio run -t upload
    ```
+
+3. Connect to WiFi:
+   - The device creates a WiFi network called "ESP32-Mic-Setup"
+   - Connect to it with your phone or computer
+   - A captive portal opens automatically (or go to 192.168.4.1)
+   - Select your WiFi network and enter the password
+   - The device saves credentials and connects automatically
 
 4. (Optional) Check serial monitor to verify it's working:
    ```bash
@@ -63,10 +64,15 @@ The device advertises itself via mDNS, so no need to find the IP address. If `.l
 
 | Color | Meaning |
 |-------|---------|
-| Blue (blinking) | Connecting to WiFi |
+| Purple | Config portal active (waiting for WiFi setup) |
+| Blue | Connecting to WiFi |
 | Green | Connected, idle |
 | Cyan | Streaming audio |
 | Red | Error (mic init failed) |
+
+## Button
+
+Hold the button for 3+ seconds to enter WiFi config mode. This lets you reconfigure the WiFi network without reflashing.
 
 ## Specs
 

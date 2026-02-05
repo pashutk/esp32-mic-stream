@@ -3,12 +3,8 @@
 #include <WebServer.h>
 #include <ESPmDNS.h>
 #include <FastLED.h>
+#include <WiFiManager.h>
 #include "driver/i2s.h"
-#if __has_include("credentials.h")
-#include "credentials.h"
-#else
-#error "Missing credentials.h - copy src/credentials.h.example to src/credentials.h and fill in your WiFi credentials"
-#endif
 
 static const char* MDNS_HOSTNAME = "esp32-mic";
 
@@ -17,9 +13,31 @@ static const char* MDNS_HOSTNAME = "esp32-mic";
 #define NUM_LEDS 1
 static CRGB leds[NUM_LEDS];
 
+// Button config (Atom Echo has button on GPIO 39 with external pullup)
+#define BUTTON_PIN 39
+
 void setLED(uint8_t r, uint8_t g, uint8_t b) {
   leds[0] = CRGB(r, g, b);
   FastLED.show();
+}
+
+void configModeCallback(WiFiManager *wm) {
+  Serial.println("Entered config mode");
+  setLED(50, 0, 50);  // Purple: config portal active
+}
+
+bool checkButtonLongPress() {
+  static unsigned long pressStart = 0;
+  if (digitalRead(BUTTON_PIN) == LOW) {
+    if (pressStart == 0) pressStart = millis();
+    if (millis() - pressStart > 3000) {
+      pressStart = 0;
+      return true;
+    }
+  } else {
+    pressStart = 0;
+  }
+  return false;
 }
 
 WebServer server(80);
@@ -184,19 +202,22 @@ void setup() {
   FastLED.setBrightness(20);
   setLED(0, 0, 50);  // Dim blue: starting up
 
+  // Initialize button
+  pinMode(BUTTON_PIN, INPUT);  // External pullup on Atom Echo
+
   Serial.println("esp32-mic starting");
 
-  // Connect to WiFi
-  Serial.printf("Connecting to %s", WIFI_SSID);
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  bool ledOn = true;
-  while (WiFi.status() != WL_CONNECTED) {
-    setLED(0, 0, ledOn ? 50 : 0);  // Blink blue
-    ledOn = !ledOn;
-    delay(500);
-    Serial.print(".");
+  // WiFiManager setup
+  WiFiManager wm;
+  wm.setAPCallback(configModeCallback);
+  wm.setConfigPortalTimeout(180);  // 3 min timeout
+
+  setLED(50, 0, 50);  // Purple: config portal (if needed)
+  if (!wm.autoConnect("ESP32-Mic-Setup")) {
+    Serial.println("Config portal timeout, restarting...");
+    ESP.restart();
   }
-  Serial.println(" connected!");
+  Serial.println("WiFi connected!");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   setLED(0, 50, 0);  // Green: connected
@@ -231,18 +252,27 @@ void setup() {
 void loop() {
   server.handleClient();
 
-  // Reconnect WiFi if disconnected
+  // Check for long button press to enter config portal
+  if (checkButtonLongPress()) {
+    Serial.println("Button held - starting config portal");
+    setLED(50, 0, 50);  // Purple
+    WiFiManager wm;
+    wm.setConfigPortalTimeout(180);
+    wm.startConfigPortal("ESP32-Mic-Setup");
+    setLED(0, 50, 0);  // Green
+  }
+
+  // Update LED based on WiFi status (WiFi auto-reconnects)
+  static bool wasConnected = true;
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("WiFi disconnected, reconnecting...");
-    setLED(0, 0, 50);  // Blue: reconnecting
-    WiFi.reconnect();
-    unsigned long start = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - start < 10000) {
-      delay(500);
+    if (wasConnected) {
+      Serial.println("WiFi disconnected, reconnecting...");
+      setLED(0, 0, 50);  // Blue: reconnecting
+      wasConnected = false;
     }
-    if (WiFi.status() == WL_CONNECTED) {
-      Serial.println("WiFi reconnected");
-      setLED(0, 50, 0);  // Green: connected
-    }
+  } else if (!wasConnected) {
+    Serial.println("WiFi reconnected");
+    setLED(0, 50, 0);  // Green: connected
+    wasConnected = true;
   }
 }
