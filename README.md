@@ -2,88 +2,71 @@
 
 ![M5Stack Atom Echo](docs/banner.jpg)
 
-ESP32 WiFi microphone streaming over HTTP. Works with M5Stack Atom Echo. Streams 16-bit PCM audio as WAV.
+Stream audio from an M5Stack Atom Echo over WiFi. Use as baby monitor, room monitor, or remote mic. No apps, no cloud.
 
-Use as baby monitor, room monitor, or remote mic. No apps, no cloud — open the stream URL in any audio player (VLC, ffplay, browser, etc.).
+## Getting Started
 
-```mermaid
-flowchart LR
-    A[Atom Echo] -- http://esp32-mic.local/stream.wav --> B[VLC / Browser / ffplay]
-```
+You need: **M5Stack Atom Echo** + **USB-C cable** + **Chrome or Edge browser**
 
-Built with Claude Code.
+### 1. Flash the firmware
 
-## Hardware
+Open the web installer and click Install:
 
-- M5Stack Atom Echo (ESP32-PICO-D4 with PDM mic)
+**https://pashutk.github.io/esp32-mic-stream/**
 
-## Quick Install (Web)
+### 2. Connect to WiFi
 
-Flash directly from your browser (Chrome/Edge):
+- Join the "ESP32-Mic-Setup" WiFi network from your phone or computer
+- A setup page opens automatically
+- Pick your WiFi network and enter the password
 
-**[Install ESP32-Mic](https://pashutk.github.io/esp32-mic-stream/)**
-
-## Setup (Manual)
-
-1. Install PlatformIO:
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate
-   pip install platformio
-   ```
-
-2. Build and flash:
-   ```bash
-   source .venv/bin/activate
-   pio run -t upload
-   ```
-
-3. Connect to WiFi:
-   - The device creates a WiFi network called "ESP32-Mic-Setup"
-   - Connect to it with your phone or computer
-   - A captive portal opens automatically
-   - Select your WiFi network and enter the password
-   - The device saves credentials and connects automatically
-
-4. (Optional) Check serial monitor to verify it's working:
-   ```bash
-   pio device monitor
-   ```
-
-## Usage
+### 3. Start streaming
 
 Open `http://esp32-mic.local/stream.wav` in any audio player:
 
 ```bash
-# VLC
+# open in browser
+open http://esp32-mic.local/stream.wav
+
+# or VLC
 open -a VLC http://esp32-mic.local/stream.wav
 
-# ffplay
+# or ffplay
 ffplay http://esp32-mic.local/stream.wav
-
-# or just open the URL in a browser
 ```
 
-The device advertises itself via mDNS, so no need to find the IP address. If `.local` doesn't work on your network, check the serial monitor for the IP.
+If `.local` doesn't work on your network, use the IP address instead (shown on the serial monitor or in your router's device list).
+
+That's it. You're done.
+
+---
 
 ## LED Status
 
 | Color | Meaning |
 |-------|---------|
-| Purple | Config portal active (waiting for WiFi setup) |
-| Blue | Connecting to WiFi |
-| Green | Connected, idle |
-| Cyan | Streaming audio |
-| Red | Error (mic init failed) |
+| Purple | Waiting for WiFi setup |
+| Blue | Connecting |
+| Green | Ready |
+| Cyan | Streaming |
+| Red | Error |
 
-## Button
+## Reconfigure WiFi
 
-Hold the button for 3+ seconds to enter WiFi config mode. This lets you reconfigure the WiFi network without reflashing.
+Hold the button for 3+ seconds to re-enter WiFi setup mode.
+
+## Development
+
+Build from source with PlatformIO:
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install platformio
+pio run -t upload
+```
 
 ## Specs
 
-- 16kHz sample rate
-- 16-bit mono PCM
-- Band-pass filter (80Hz – 3kHz) to reduce rumble and high-frequency noise
-- ~1-2s latency (can be reduced with VLC's `--network-caching` option)
+- 16kHz sample rate, 16-bit mono PCM
+- Band-pass filter (80Hz – 3kHz)
 - Auto-reconnects if WiFi drops
