@@ -2,10 +2,25 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <ESPmDNS.h>
+#include <FastLED.h>
 #include "driver/i2s.h"
-#include "credentials.h"  // defines WIFI_SSID and WIFI_PASS
+#if __has_include("credentials.h")
+#include "credentials.h"
+#else
+#error "Missing credentials.h - copy src/credentials.h.example to src/credentials.h and fill in your WiFi credentials"
+#endif
 
 static const char* MDNS_HOSTNAME = "esp32-mic";
+
+// LED config (Atom Echo has SK6812 on GPIO 27)
+#define LED_PIN 27
+#define NUM_LEDS 1
+static CRGB leds[NUM_LEDS];
+
+void setLED(uint8_t r, uint8_t g, uint8_t b) {
+  leds[0] = CRGB(r, g, b);
+  FastLED.show();
+}
 
 WebServer server(80);
 
@@ -145,6 +160,7 @@ void handleStream() {
   size_t bytes_read = 0;
 
   Serial.println("Streaming live audio...");
+  setLED(0, 50, 50);  // Cyan: streaming
 
   while (client.connected()) {
     if (i2s_read(I2S_NUM_0, samples, sizeof(samples), &bytes_read, portMAX_DELAY) == ESP_OK) {
@@ -156,24 +172,34 @@ void handleStream() {
   }
 
   Serial.println("Stream ended");
+  setLED(0, 50, 0);  // Green: idle
 }
 
 void setup() {
   Serial.begin(115200);
   delay(200);
 
-  Serial.println("esp32-mic: mic RMS probe");
+  // Initialize LED
+  FastLED.addLeds<SK6812, LED_PIN, GRB>(leds, NUM_LEDS);
+  FastLED.setBrightness(20);
+  setLED(0, 0, 50);  // Dim blue: starting up
+
+  Serial.println("esp32-mic starting");
 
   // Connect to WiFi
   Serial.printf("Connecting to %s", WIFI_SSID);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
+  bool ledOn = true;
   while (WiFi.status() != WL_CONNECTED) {
+    setLED(0, 0, ledOn ? 50 : 0);  // Blink blue
+    ledOn = !ledOn;
     delay(500);
     Serial.print(".");
   }
   Serial.println(" connected!");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+  setLED(0, 50, 0);  // Green: connected
 
   // Setup mDNS
   if (MDNS.begin(MDNS_HOSTNAME)) {
@@ -192,6 +218,7 @@ void setup() {
   if (!setupMic()) {
     Serial.println("i2s init failed");
     while (true) {
+      setLED(50, 0, 0);  // Red: error
       delay(1000);
     }
   }
@@ -203,4 +230,19 @@ void setup() {
 
 void loop() {
   server.handleClient();
+
+  // Reconnect WiFi if disconnected
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi disconnected, reconnecting...");
+    setLED(0, 0, 50);  // Blue: reconnecting
+    WiFi.reconnect();
+    unsigned long start = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - start < 10000) {
+      delay(500);
+    }
+    if (WiFi.status() == WL_CONNECTED) {
+      Serial.println("WiFi reconnected");
+      setLED(0, 50, 0);  // Green: connected
+    }
+  }
 }
