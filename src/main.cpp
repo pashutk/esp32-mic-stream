@@ -218,7 +218,9 @@ void setup() {
     ESP.restart();
   }
   Serial.println("WiFi connected!");
-  WiFi.mode(WIFI_STA);  // WiFiManager may leave AP active, mDNS needs STA-only
+  WiFi.mode(WIFI_STA);
+  WiFi.setSleep(false);
+  delay(500);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   setLED(0, 50, 0);  // Green: connected
