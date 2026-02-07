@@ -57,9 +57,10 @@ jobs:
             0xe000 ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin \
             0x10000 .pio/build/m5stack-atom/firmware.bin
 
-      - name: Update manifest version
+      - name: Update manifest version and bust cache
         run: |
           sed -i 's/"version": ".*"/"version": "${{ steps.version.outputs.version }}"/' docs/manifest.json
+          sed -i 's|manifest="manifest.json"|manifest="manifest.json?v=${{ steps.version.outputs.version }}"|' docs/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
