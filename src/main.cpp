@@ -218,6 +218,7 @@ void setup() {
     ESP.restart();
   }
   Serial.println("WiFi connected!");
+  WiFi.mode(WIFI_STA);  // WiFiManager may leave AP active, mDNS needs STA-only
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   setLED(0, 50, 0);  // Green: connected
@@ -259,6 +260,9 @@ void loop() {
     WiFiManager wm;
     wm.setConfigPortalTimeout(180);
     wm.startConfigPortal("ESP32-Mic-Setup");
+    WiFi.mode(WIFI_STA);
+    MDNS.begin(MDNS_HOSTNAME);
+    MDNS.addService("http", "tcp", 80);
     setLED(0, 50, 0);  // Green
   }
 
@@ -272,6 +276,8 @@ void loop() {
     }
   } else if (!wasConnected) {
     Serial.println("WiFi reconnected");
+    MDNS.begin(MDNS_HOSTNAME);
+    MDNS.addService("http", "tcp", 80);
     setLED(0, 50, 0);  // Green: connected
     wasConnected = true;
   }
